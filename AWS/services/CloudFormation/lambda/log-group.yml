@@ -1,0 +1,25 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Para[Resource import](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/resource-import.html) meters:
+  LogRetentionInDays:
+    Type: String
+    Default: '7'
+    AllowedValues: ['', 1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, 3653]
+
+Conditions:
+  LogRetentionInDaysSet: !Not [!Equals [!Ref LogRetentionInDays, '']]
+  
+Resources:
+  myLogGroup: 
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Retain
+    Properties: 
+      LogGroupName: !Ref "/aws/lambda/${primer}"
+      RetentionInDays:  !If [LogRetentionInDaysSet, !Ref LogRetentionInDays, !Ref AWS::NoValue]
+
+  myLogGroup: 
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Retain
+    Properties: 
+      LogGroupName: /aws/lambda/HelloWorldPyByCF
+      RetentionInDays: 30

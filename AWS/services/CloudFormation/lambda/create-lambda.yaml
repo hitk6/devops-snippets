@@ -1,0 +1,43 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Lambda function with cfn-response.
+
+Parameters:
+  LogRetentionInDays:
+    Type: String
+    Default: '7'
+    AllowedValues: ['', 1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, 3653]
+
+Conditions:
+  LogRetentionInDaysSet: !Not [!Equals [!Ref LogRetentionInDays, '']]
+
+Resources:
+  cf_lambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Runtime: python3.6
+      Role: arn:aws:iam::484877160476:role/lambda_full-access
+      Handler: index.handler
+      FunctionName: HelloWorldByCF
+      Code:
+        ZipFile: |
+          def handler(eve,context):
+            print("from lambda")
+            return "Hello World !!"
+      Description: Invoke a function during stack creation
+      TracingConfig:
+        Mode: Active
+
+  myLogGroup: 
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Retain
+    Properties: 
+      LogGroupName: !Ref "/aws/lambda/${cf_lambda}"
+      #RetentionInDays: 7
+      RetentionInDays:  !If [LogRetentionInDaysSet, !Ref LogRetentionInDays, !Ref AWS::NoValue]
+
+
+
+     
+
+
+      

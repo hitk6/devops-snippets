@@ -1,0 +1,31 @@
+version: 0.2
+phases:
+  install:
+    runtime-versions:
+      nodejs: 14
+    commands:
+      - echo Entered the install phase...
+      - curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
+      - echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
+      - apt update
+      - apt install --no-install-recommends yarn
+  pre_build:
+    commands:
+      - echo Entered the pre_build phase...
+      - echo DeploymentBucket $DeploymentBucket
+      - echo DistributionId $DistributionId
+      - yarn install
+  build:
+    commands:
+      - echo Entered the build phase...
+      - echo Build started on 'date'
+      - yarn --version 
+      - yarn build
+  post_build:
+    commands:
+      - echo Entered the post_build phase...
+      - aws s3 rm s3://$DeploymentBucket/ --recursive
+      - aws s3 sync ./build s3://$DeploymentBucket/ 
+      - aws cloudfront create-invalidation --distribution-id=$DistributionId --paths '/*' 
+      - echo Build completed on `date`
+
